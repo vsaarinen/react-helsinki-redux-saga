@@ -54,6 +54,10 @@
           </div>
         </section>
         <section>
+          <h2>Interactive data visualisation</h2>
+          <p>Custom projects</p>
+        </section>
+        <section>
           <h2>Minard</h2>
           <p>
             A preview server for static web projects
@@ -67,7 +71,7 @@
             <div>
               <h3>Backend</h3>
               <ul>
-                <li>TypeScript 2.1</li>
+                <li>TypeScript</li>
                 <li>Node + Hapi</li>
                 <li>Docker</li>
                 <li>GitLab</li>
@@ -76,7 +80,7 @@
             <div>
               <h3>Frontend</h3>
               <ul>
-                <li>TypeScript 2.1</li>
+                <li>TypeScript</li>
                 <li>React</li>
                 <li>redux</li>
                 <li>redux-saga</li>
@@ -122,7 +126,7 @@ loadData(this.props.dispatch, this.props.id);
           <h2>Async operations in React</h2>
           <ul>
             <li>Inline</li>
-            <li class="fragment"><strong>Centralized logic</strong></li>
+            <li class="fragment"><strong>Centralized logic (aka. action creators)</strong></li>
           <ul>
         </section>
         <section>
@@ -171,7 +175,7 @@ loadData(this.props.dispatch, this.props.id);
           <h2>Async operations in React</h2>
           <ul>
             <li>Inline</li>
-            <li>Centralized logic</li>
+            <li>Centralized logic (aka. action creators)</li>
             <li class="fragment"><strong>redux-thunk</strong></li>
           <ul>
         </section>
@@ -222,7 +226,7 @@ this.props.dispatch(loadData(this.props.id));
           <h2>Async operations in React</h2>
           <ul>
             <li>Inline</li>
-            <li>Centralized logic</li>
+            <li>Centralized logic (aka. action creators)</li>
             <li>redux-thunk</li>
             <li class="fragment"><strong>redux-saga</strong></li>
           <ul>
@@ -250,12 +254,14 @@ iter.next(); // => { value: 3, done: false }
           <pre><code data-trim class="javascript">
 function *twoWayGenerator() {
   console.log('inside: starting');
-  const firstYieldReturn = yield 1;
-  console.log('inside: firstYieldReturn', firstYieldReturn);
-  const secondYieldReturn = yield 2;
-  console.log('inside: secondYieldReturn', secondYieldReturn);
+  const firstYieldValue = yield 1;
+  console.log('inside: firstYieldValue', firstYieldValue);
+  const secondYieldValue = yield 2;
+  console.log('inside: secondYieldValue', secondYieldValue);
   return 3;
 }
+          </code></pre>
+          <pre class="fragment"><code data-trim class="javascript">
 
 const iter2 = twoWayGenerator();
 iter2.next();
@@ -263,11 +269,11 @@ iter2.next();
 // => { value: 1, done: false }
 
 iter2.next('hi there');
-// 'inside: firstYieldReturn', 'hi there'
+// 'inside: firstYieldValue', 'hi there'
 // => { value: 2, done: false }
 
 iter2.next('oh my');
-// 'inside: secondYieldReturn', 'oh my'
+// 'inside: secondYieldValue', 'oh my'
 // => { value: 3, done: true }
 
 iter2.next()
@@ -278,7 +284,7 @@ iter2.next()
           <h2>Async operations in React</h2>
           <ul>
             <li>Inline</li>
-            <li>Centralized logic</li>
+            <li>Centralized logic (aka. action creators)</li>
             <li>redux-thunk</li>
             <li><strong>redux-saga</strong></li>
           <ul>
@@ -305,10 +311,13 @@ iter2.next()
             the redux-saga middleware to tell it what to do.
           </p>
           <p class="fragment">
-            The redux-saga library comes with built-in support for certain effects and
-            corresponding effect creators. Using these primitives, you can do some
-            really powerful stuff.
+            redux-saga comes with effect generators&mdash;functions that return
+            appropriately formatted objects.
           </p>
+          <pre class="fragment"><code data-trim class="ts">
+const effect = effectCreator(...args);
+yield effect;
+          </code></pre>
         </section>
         <section data-transition="fade-in slide-out">
           <h2>redux-saga effects</h2>
@@ -455,18 +464,18 @@ function* watchInput() {
           <h2>Example</h2>
           <h3>Token refreshing</h3>
           <pre style="position:absolute; margin-left: auto; margin-right: auto; left: 0; right: 0;" class="fragment fade-out" data-fragment-index="0"><code data-trim class="ts">
-function* authorize(name: string, password: string) {
+function* authorize(credentials: Token | { name: string, password: string }) {
   // api.authorize throws on error
-  const token = yield call(api.authorize, name, password);
+  const token = yield call(api.authorize, credentials);
   yield put(login.success(token));
   return token;
 }
 
 function* authAndRefreshTokenOnExpiry(name: string, password: string) {
-  let token = yield call(authorize, name, password);
+  let token = yield call(authorize, { name, password });
   while(true) {
     yield call(delay, token.expires_in);
-    token = yield call(authorize, {token});
+    token = yield call(authorize, token);
   }
 }
 
